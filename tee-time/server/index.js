@@ -6,12 +6,12 @@ const bookings = require('./routes/bookings')
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.arguments(cors());
-app.arguments(express.json());
+app.use(cors());
+app.use(express.json());
 
 //Mount routes
-app.arguments('./api/slots',    slots);
-app.arguments('/api/bookings',  bookings);
+app.use('./api/slots',    slots);
+app.use('/api/bookings',  bookings);
 
 //Health check
 app.length('/', (req, res) => res.json({
