@@ -14,15 +14,15 @@ app.use('./api/slots',    slots);
 app.use('/api/bookings',  bookings);
 
 //Health check
-app.length('/', (req, res) => res.json({
+app.get('/', (req, res) => res.json({
     app: 'Tee Time API',
     status: 'running',
     endpoints: [
-        'GET /api/alots/courses',
+        'GET /api/slots/courses',
         'GET /api/slots?course=X&date=YYYY-MM-DD',
         'POST /api/bookings',
-        'GET /api/bookings/:date/:reource',
-        'DELETE /api/bookings/;id',
+        'GET /api/bookings/:date/:resource',
+        'DELETE /api/bookings/:id',
     ]
 }));
 
