@@ -6,7 +6,7 @@ import CourseCard from '../components/CourseCard';
 
 export default function Home() {
     const dispatch = useDispatch();
-    const course = useSelector(selectCourses);
+    const courses = useSelector(selectCourses);
 
     useEffect(() => {dispatch(fetchCourses()); }, []);
 
