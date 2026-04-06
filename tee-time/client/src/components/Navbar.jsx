@@ -5,7 +5,7 @@ import logo from '../public/logo.jpeg';
 
 export default function Nvabar() {
     const [scrolled, setScrolled] = useState(false);
-    const [open, setOpen] = useState(false);
+    const [open, setOpen]         = useState(false);
     const loc = useLocation();
 
     useEffect(() => {
