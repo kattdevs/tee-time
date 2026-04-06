@@ -16,17 +16,22 @@ export default function Book() {
   const course = useSelector(selectCourse);
   const date = useSelector(selectDate);
   const modalOpen = useSelector(selectModal);
-  const today = new Date().toISOString().split('T')[0];
+  const today = new Date().toISOString().split('T')[0]; // always YYYY-MM-DD
 
-  // Load courses on mount
   useEffect(() => { dispatch(fetchCourses()); }, [dispatch]);
 
-  // Fetch slots whenever course OR date changes — both must be set
   useEffect(() => {
     if (course && date) {
       dispatch(fetchSlots({ course, date }));
     }
   }, [course, date, dispatch]);
+
+  // Fix date format: browser may return YYYY/MM/DD — convert to YYYY-MM-DD
+  const handleDateChange = (e) => {
+    const raw = e.target.value; // e.g. "2026-04-07" or "2026/04/07"
+    const formatted = raw.replace(/\//g, '-'); // replace any slashes with dashes
+    dispatch(setDate(formatted));
+  };
 
   const sectionStyle = {
     background: 'rgba(255,255,255,0.04)',
@@ -48,7 +53,7 @@ export default function Book() {
 
   return (
     <div style={{ background: '#0D3B1E', minHeight: '100vh', paddingTop: '90px' }}>
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px 80px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px 80px' }}>
 
         <h1 style={{
           fontFamily: 'Playfair Display, serif',
@@ -66,9 +71,11 @@ export default function Book() {
         {/* Choose a Course */}
         <div style={sectionStyle}>
           <span style={labelStyle}>Choose a Course</span>
+
+          {/* Responsive grid: 1 col mobile, 2 col tablet, 4 col desktop */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
             gap: '16px',
           }}>
             {courses.map(c => (
@@ -82,7 +89,7 @@ export default function Book() {
           </div>
         </div>
 
-        {/* Select a Date — only show after course is chosen */}
+        {/* Select a Date */}
         {course && (
           <div style={sectionStyle}>
             <span style={labelStyle}>Select a Date</span>
@@ -90,7 +97,7 @@ export default function Book() {
               type='date'
               min={today}
               value={date}
-              onChange={e => dispatch(setDate(e.target.value))}
+              onChange={handleDateChange}
               style={{
                 padding: '14px 20px',
                 borderRadius: '12px',
@@ -101,14 +108,20 @@ export default function Book() {
                 outline: 'none',
                 cursor: 'pointer',
                 width: '100%',
-                maxWidth: '280px',
+                maxWidth: '300px',
                 boxSizing: 'border-box',
+                colorScheme: 'dark',
               }}
             />
+            {date && (
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '8px' }}>
+                Selected: {date}
+              </p>
+            )}
           </div>
         )}
 
-        {/* Pick a Tee Time — only show after both course and date are chosen */}
+        {/* Tee Time Slots */}
         {course && date && (
           <div style={sectionStyle}>
             <span style={labelStyle}>Pick a Tee Time</span>
@@ -116,20 +129,27 @@ export default function Book() {
           </div>
         )}
 
-        {/* Prompt if nothing selected yet */}
+        {/* Helper prompts */}
         {!course && (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.35)', fontSize: '15px' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.3)', fontSize: '15px' }}>
             Select a course above to get started.
           </div>
         )}
         {course && !date && (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.35)', fontSize: '15px' }}>
+          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.3)', fontSize: '15px' }}>
             Choose a date to see available tee times.
           </div>
         )}
       </div>
 
       {modalOpen && <BookingModal />}
+
+      {/* Responsive styles */}
+      <style>{`
+        @media (max-width: 480px) {
+          input[type='date'] { max-width: 100% !important; }
+        }
+      `}</style>
     </div>
   );
 }
