@@ -28,7 +28,7 @@ export default function Toast() {
             animation: 'slideIn 0.3 ease',
             maxWidth: '380px',
         }}>
-            {isSuccess ? <CheckCircle size={20} color='#C9A84C' /> : <XCircle size{20} color='#EF4444' />}
+            {isSuccess ? <CheckCircle size={20} color='#C9A84C' /> : <XCircle size={20} color='#EF4444' />}
             <span style={{color:'white', fontsize:'14px', fontWeight:'500'}}>
                 {toast.message}
             </span>
