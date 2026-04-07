@@ -29,7 +29,7 @@ export default function BookingModal () {
              return;
             }
         const result = await dispatch(createBooking({
-            course: course, 
+            courseId: course, 
             date: date, 
             time:slot, 
             name: form.name,

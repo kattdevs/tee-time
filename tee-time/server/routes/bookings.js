@@ -4,13 +4,13 @@ const { validateDate, validateEmail, normaliseDate } = require('../middleware/va
 
 // POST /api/bookings
 router.post('/', (req, res) => {
-  const { course, time, name, email, players } = req.body;
+  const { courseId, time, name, email, players } = req.body;
   const date = normaliseDate(req.body.date);
 
-  if (!course || !date || !time || !name || !email) {
-    return res.status(400).json({ error: 'Required: course, date, time, name, email' });
+  if (!courseId || !date || !time || !name || !email) {
+    return res.status(400).json({ error: 'Required: courseId, date, time, name, email' });
   }
-  if (!COURSES[course]) return res.status(404).json({ error: `Course not found: ${course}` });
+  if (!COURSES[courseId]) return res.status(404).json({ error: `Course not found: ${courseId}` });
   if (!validateDate(date, res)) return;
   if (!validateEmail(email, res)) return;
 
@@ -22,7 +22,7 @@ router.post('/', (req, res) => {
   const booking = createBooking({ courseId: course, date, time, name, email, players: numPlayers });
   if (!booking) {
     return res.status(409).json({
-      error: `Tee time ${time} on ${date} at ${COURSES[course].name} is already booked.`
+      error: `Tee time ${time} on ${date} at ${COURSES[courseId].name} is already booked.`
     });
   }
   res.status(201).json({ message: 'Tee time booked!', booking });
