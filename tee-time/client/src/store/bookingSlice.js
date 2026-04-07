@@ -48,6 +48,7 @@ const bookingSlice = createSlice({
     reservations: [],
     selectedCourse: null,
     selectedDate: new Date().toISOString().split('T')[0],
+    selectedSlot: null,
     lastBooking: null,
     loading: false,
     error: null,
@@ -55,6 +56,7 @@ const bookingSlice = createSlice({
   reducers: {
     setCourse: (state, action) => { state.selectedCourse = action.payload; state.slots = []; },
     setDate: (state, action) => { state.selectedDate = action.payload; state.slots = []; },
+    setSlot:   (state, action) => { state.selectedSlot = action.payload; }, 
     clearError: state => { state.error = null; },
   },
   extraReducers: builder => {
@@ -73,7 +75,7 @@ const bookingSlice = createSlice({
   }
 });
 
-export const { setCourse, setDate, clearError } = bookingSlice.actions;
+export const { setCourse, setDate, setSlot, clearError } = bookingSlice.actions;
 
 export const selectCourses = s => s.booking.courses;
 export const selectSlots = s => s.booking.slots;
