@@ -3,7 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Toast  from './components/Toast';
 import Home       from './pages/Home';
-import Book       from './components/BookingModal';
+import Book       from './pages/Book';
 import MyBookings from './pages/MyBookings';
  
 export default function App() {
