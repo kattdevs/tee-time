@@ -28,9 +28,14 @@ export default function BookingModal () {
             setErrors(errs);
              return;
             }
-        const result = await dispatch(
-            createBooking({courseId: course, date, time:slot, ...form })
-        );
+        const result = await dispatch(createBooking({
+            courseId: course, 
+            date, 
+            time:slot, 
+            name: form.name,
+            email: form.email,
+            players: Number(form.players),
+        }));
             if (createBooking.fulfilled.match(result)) {
                 dispatch(closeModal());
                 dispatch(showToast({message:`Tee time ${slot} booked!`, type:'success'}));
