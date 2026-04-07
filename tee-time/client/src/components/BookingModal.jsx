@@ -1,47 +1,36 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { X } from 'lucide-react';
-import { closeModal, showToast } from '../store/uiSlice';
+import { closeModal, showToast, selectSlot } from '../store/uiSlice';
 import {
   createBooking,
   fetchSlots,
   selectCourse,
-  selectCourses,
   selectDate,
   selectLoading,
-  selectSlots,
-  setSlot,
-  selectSlot,
+  selectCourses,
 } from '../store/bookingSlice';
 
 export default function BookingModal() {
   const dispatch = useDispatch();
 
-  // Redux state
-  const slot = useSelector(selectSlot);
-  const slots = useSelector(selectSlots);
-  const course = useSelector(selectCourse);
-  const date = useSelector(selectDate);
+  // Get everything from Redux
+  const slot    = useSelector(selectSlot);       // the tee time string e.g. "07:00"
+  const course  = useSelector(selectCourse);     // course id e.g. "royal-cape"
+  const date    = useSelector(selectDate);       // date string e.g. "2026-04-08"
   const loading = useSelector(selectLoading);
   const courses = useSelector(selectCourses);
 
+  // Find the full course name for display
   const courseObj = courses.find(c => c.id === course);
   const courseName = courseObj ? courseObj.name : course;
 
-  // Local form state
-  const [form, setForm] = useState({ name: '', email: '', players: '1' });
+  const [form, setForm]     = useState({ name: '', email: '', players: '1' });
   const [errors, setErrors] = useState({});
-
-  // Fetch slots when course/date changes
-  useEffect(() => {
-    if (course && date) {
-      dispatch(fetchSlots({ course, date }));
-    }
-  }, [course, date]);
 
   const validate = () => {
     const e = {};
-    if (!form.name.trim()) e.name = 'Full name is required';
+    if (!form.name.trim())  e.name  = 'Full name is required';
     if (!form.email.trim()) e.email = 'Email is required';
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
       e.email = 'Enter a valid email address';
@@ -50,43 +39,45 @@ export default function BookingModal() {
 
   const handleSubmit = async () => {
     const errs = validate();
-    if (Object.keys(errs).length) {
-      setErrors(errs);
-      return;
-    }
-    if (!slot) {
-      dispatch(showToast({ message: 'Please select a tee time slot', type: 'error' }));
-      return;
-    }
+    if (Object.keys(errs).length) { setErrors(errs); return; }
 
+    // Make sure date is YYYY-MM-DD (no slashes)
     const cleanDate = date ? date.replace(/\//g, '-') : '';
 
-    const payload = {
+    // Log what we are sending so you can verify in console
+    console.log('Booking payload:', {
       courseId: course,
       date: cleanDate,
       time: slot,
       name: form.name.trim(),
       email: form.email.trim(),
       players: parseInt(form.players, 10),
-    };
+    });
 
-    console.log('Booking payload:', payload);
-
-    const result = await dispatch(createBooking(payload));
+    const result = await dispatch(createBooking({
+      courseId: course,
+      date:     cleanDate,
+      time:     slot,
+      name:     form.name.trim(),
+      email:    form.email.trim(),
+      players:  parseInt(form.players, 10),
+    }));
 
     if (createBooking.fulfilled.match(result)) {
       dispatch(closeModal());
       dispatch(showToast({ message: `Tee time ${slot} booked successfully!`, type: 'success' }));
+      // Refresh available slots so the booked one disappears
       dispatch(fetchSlots({ course, date: cleanDate }));
     } else {
+      // Show the server error message as a toast
       dispatch(showToast({
         message: result.payload || 'Booking failed. Please try again.',
-        type: 'error',
+        type: 'error'
       }));
     }
   };
 
-  const inputStyle = field => ({
+  const inputStyle = (field) => ({
     width: '100%',
     padding: '12px 16px',
     borderRadius: '10px',
@@ -99,6 +90,7 @@ export default function BookingModal() {
   });
 
   return (
+    // Overlay — click outside to close
     <div
       onClick={() => dispatch(closeModal())}
       style={{
@@ -109,6 +101,7 @@ export default function BookingModal() {
         zIndex: 200, padding: '16px',
       }}
     >
+      {/* Modal panel */}
       <div
         onClick={e => e.stopPropagation()}
         style={{
@@ -129,16 +122,12 @@ export default function BookingModal() {
               Confirm Booking
             </h2>
             <p style={{ color: '#C9A84C', fontSize: '14px', marginTop: '6px' }}>
-              {slot || '--:--'} &nbsp;&bull;&nbsp; {date} &nbsp;&bull;&nbsp; {courseName}
+              {slot} &nbsp;&bull;&nbsp; {date} &nbsp;&bull;&nbsp; {courseName}
             </p>
           </div>
           <button
             onClick={() => dispatch(closeModal())}
-            style={{
-              background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%',
-              width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', color: 'white', flexShrink: 0
-            }}
+            style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '34px', height: '34px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'white', flexShrink: 0 }}
           >
             <X size={16} />
           </button>
@@ -146,6 +135,7 @@ export default function BookingModal() {
 
         {/* Form */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
           {/* Full Name */}
           <div>
             <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', display: 'block', marginBottom: '6px' }}>
@@ -153,11 +143,16 @@ export default function BookingModal() {
             </label>
             <input
               value={form.name}
-              onChange={e => { setForm(p => ({ ...p, name: e.target.value })); setErrors(p => ({ ...p, name: '' })); }}
+              onChange={e => {
+                setForm(p => ({ ...p, name: e.target.value }));
+                setErrors(p => ({ ...p, name: '' }));
+              }}
               placeholder='e.g. John Smith'
               style={inputStyle('name')}
             />
-            {errors.name && <p style={{ color: '#EF4444', fontSize: '12px', marginTop: '4px' }}>{errors.name}</p>}
+            {errors.name && (
+              <p style={{ color: '#EF4444', fontSize: '12px', marginTop: '4px' }}>{errors.name}</p>
+            )}
           </div>
 
           {/* Email */}
@@ -167,12 +162,17 @@ export default function BookingModal() {
             </label>
             <input
               value={form.email}
-              onChange={e => { setForm(p => ({ ...p, email: e.target.value })); setErrors(p => ({ ...p, email: '' })); }}
+              onChange={e => {
+                setForm(p => ({ ...p, email: e.target.value }));
+                setErrors(p => ({ ...p, email: '' }));
+              }}
               placeholder='john@example.com'
               type='email'
               style={inputStyle('email')}
             />
-            {errors.email && <p style={{ color: '#EF4444', fontSize: '12px', marginTop: '4px' }}>{errors.email}</p>}
+            {errors.email && (
+              <p style={{ color: '#EF4444', fontSize: '12px', marginTop: '4px' }}>{errors.email}</p>
+            )}
           </div>
 
           {/* Number of Players */}
@@ -185,53 +185,34 @@ export default function BookingModal() {
               onChange={e => setForm(p => ({ ...p, players: e.target.value }))}
               style={{ ...inputStyle('players'), cursor: 'pointer' }}
             >
-              {[1,2,3,4].map(n => <option key={n} value={n}>{n} Player{n>1?'s':''}</option>)}
-            </select>
-          </div>
-
-          {/* Slot Selection */}
-          <div>
-            <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '13px', display: 'block', marginBottom: '6px' }}>
-              Select Tee Time
-            </label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {slots.length === 0 ? (
-                <p style={{ color: 'rgba(255,255,255,0.5)' }}>No slots available</p>
-              ) : slots.map(s => (
-                <button
-                  key={s}
-                  onClick={() => dispatch(setSlot(s))}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: '12px',
-                    border: slot === s ? '2px solid #C9A84C' : '1px solid rgba(255,255,255,0.2)',
-                    background: slot === s ? '#0D3B1E' : 'rgba(255,255,255,0.08)',
-                    color: 'white',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {s}
-                </button>
+              {[1, 2, 3, 4].map(n => (
+                <option key={n} value={n} style={{ background: '#0D3B1E' }}>
+                  {n} Player{n > 1 ? 's' : ''}
+                </option>
               ))}
-            </div>
+            </select>
           </div>
         </div>
 
         {/* Confirm button */}
         <button
           onClick={handleSubmit}
-          disabled={loading || !slot}
+          disabled={loading}
           style={{
             marginTop: '24px',
             width: '100%',
             padding: '15px',
             borderRadius: '12px',
-            background: loading ? 'rgba(201,168,76,0.5)' : 'linear-gradient(135deg, #C9A84C, #E8C87A)',
+            background: loading
+              ? 'rgba(201,168,76,0.5)'
+              : 'linear-gradient(135deg, #C9A84C, #E8C87A)',
             color: '#0D3B1E',
             fontWeight: '700',
             fontSize: '16px',
             border: 'none',
-            cursor: loading || !slot ? 'not-allowed' : 'pointer',
+            cursor: loading ? 'not-allowed' : 'pointer',
+            letterSpacing: '0.5px',
+            transition: 'opacity 0.2s',
           }}
         >
           {loading ? 'Booking...' : 'Confirm Tee Time'}
