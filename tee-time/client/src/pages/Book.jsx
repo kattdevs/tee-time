@@ -16,138 +16,126 @@ export default function Book() {
   const course = useSelector(selectCourse);
   const date = useSelector(selectDate);
   const modalOpen = useSelector(selectModal);
-  const today = new Date().toISOString().split('T')[0]; // always YYYY-MM-DD
+  const today = new Date().toISOString().split('T')[0];
 
   useEffect(() => { dispatch(fetchCourses()); }, [dispatch]);
 
   useEffect(() => {
     if (course && date) {
-      dispatch(fetchSlots({ course, date }));
+      // Always send YYYY-MM-DD to the API
+      const cleanDate = date.replace(/\//g, '-');
+      dispatch(fetchSlots({ course, date: cleanDate }));
     }
   }, [course, date, dispatch]);
 
-  // Fix date format: browser may return YYYY/MM/DD — convert to YYYY-MM-DD
   const handleDateChange = (e) => {
-    const raw = e.target.value; // e.g. "2026-04-07" or "2026/04/07"
-    const formatted = raw.replace(/\//g, '-'); // replace any slashes with dashes
-    dispatch(setDate(formatted));
-  };
-
-  const sectionStyle = {
-    background: 'rgba(255,255,255,0.04)',
-    borderRadius: '20px',
-    padding: '28px',
-    border: '1px solid rgba(255,255,255,0.08)',
-    marginBottom: '20px',
-  };
-
-  const labelStyle = {
-    color: '#C9A84C',
-    fontSize: '11px',
-    fontWeight: '700',
-    letterSpacing: '2px',
-    textTransform: 'uppercase',
-    marginBottom: '20px',
-    display: 'block',
+    // Convert any slashes to dashes before storing
+    const clean = e.target.value.replace(/\//g, '-');
+    dispatch(setDate(clean));
   };
 
   return (
-    <div style={{ background: '#0D3B1E', minHeight: '100vh', paddingTop: '90px' }}>
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 20px 80px' }}>
+    <div style={{ background: '#0D3B1E', minHeight: '100vh', paddingTop: '80px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '32px 16px 80px' }}>
 
         <h1 style={{
           fontFamily: 'Playfair Display, serif',
           color: 'white',
-          fontSize: 'clamp(1.8rem, 4vw, 2.5rem)',
+          fontSize: 'clamp(1.6rem, 4vw, 2.4rem)',
           fontWeight: '700',
-          marginBottom: '8px',
+          marginBottom: '6px',
         }}>
           Book a Tee Time
         </h1>
-        <p style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '36px', fontSize: '15px' }}>
+        <p style={{ color: 'rgba(255,255,255,0.45)', marginBottom: '32px', fontSize: '15px' }}>
           Select your course, choose a date, and pick your slot.
         </p>
 
-        {/* Choose a Course */}
-        <div style={sectionStyle}>
-          <span style={labelStyle}>Choose a Course</span>
+        {/* ── CHOOSE A COURSE ── */}
+        <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '20px' }}>
+          <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '20px' }}>
+            Choose a Course
+          </p>
 
-          {/* Responsive grid: 1 col mobile, 2 col tablet, 4 col desktop */}
+          {/* 1 col on mobile, 2 on tablet, 4 on desktop */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: '16px',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '14px',
           }}>
+            {courses.length === 0 && (
+              <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '14px', gridColumn: '1/-1' }}>
+                Loading courses...
+              </p>
+            )}
             {courses.map(c => (
-              <CourseCard
-                key={c.id}
-                course={c}
-                compact
-                selected={course === c.id}
-              />
+              <CourseCard key={c.id} course={c} compact selected={course === c.id} />
             ))}
           </div>
         </div>
 
-        {/* Select a Date */}
+        {/* ── SELECT A DATE ── */}
         {course && (
-          <div style={sectionStyle}>
-            <span style={labelStyle}>Select a Date</span>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '20px' }}>
+            <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
+              Select a Date
+            </p>
             <input
               type='date'
               min={today}
               value={date}
               onChange={handleDateChange}
               style={{
-                padding: '14px 20px',
+                padding: '12px 18px',
                 borderRadius: '12px',
                 background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.2)',
+                border: '1px solid rgba(201,168,76,0.3)',
                 color: 'white',
-                fontSize: '16px',
+                fontSize: '15px',
                 outline: 'none',
                 cursor: 'pointer',
-                width: '100%',
-                maxWidth: '300px',
-                boxSizing: 'border-box',
                 colorScheme: 'dark',
+                width: '100%',
+                maxWidth: '260px',
+                boxSizing: 'border-box',
               }}
             />
             {date && (
-              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: '8px' }}>
-                Selected: {date}
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', marginTop: '8px' }}>
+                Showing tee times for: <span style={{ color: '#C9A84C' }}>{date}</span>
               </p>
             )}
           </div>
         )}
 
-        {/* Tee Time Slots */}
+        {/* ── PICK A TEE TIME ── */}
         {course && date && (
-          <div style={sectionStyle}>
-            <span style={labelStyle}>Pick a Tee Time</span>
+          <div style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '20px', padding: '24px', border: '1px solid rgba(255,255,255,0.08)', marginBottom: '20px' }}>
+            <p style={{ color: '#C9A84C', fontSize: '11px', fontWeight: '700', letterSpacing: '2px', textTransform: 'uppercase', marginBottom: '16px' }}>
+              Pick a Tee Time
+            </p>
             <SlotGrid />
           </div>
         )}
 
-        {/* Helper prompts */}
+        {/* Prompts */}
         {!course && (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.3)', fontSize: '15px' }}>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '32px 0', fontSize: '14px' }}>
             Select a course above to get started.
-          </div>
+          </p>
         )}
         {course && !date && (
-          <div style={{ textAlign: 'center', padding: '40px', color: 'rgba(255,255,255,0.3)', fontSize: '15px' }}>
+          <p style={{ textAlign: 'center', color: 'rgba(255,255,255,0.25)', padding: '32px 0', fontSize: '14px' }}>
             Choose a date to see available tee times.
-          </div>
+          </p>
         )}
       </div>
 
       {modalOpen && <BookingModal />}
 
-      {/* Responsive styles */}
       <style>{`
-        @media (max-width: 480px) {
-          input[type='date'] { max-width: 100% !important; }
+        @media (max-width: 600px) {
+          input[type='date'] { max-width: 100% !important; font-size: 14px !important; }
         }
       `}</style>
     </div>
