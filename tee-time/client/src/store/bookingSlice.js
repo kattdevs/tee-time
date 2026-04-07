@@ -47,7 +47,7 @@ const bookingSlice = createSlice({
     slots: [],
     reservations: [],
     selectedCourse: null,
-    selectedDate: '',
+    selectedDate: new Date().toISOString().split('T')[0],
     lastBooking: null,
     loading: false,
     error: null,
