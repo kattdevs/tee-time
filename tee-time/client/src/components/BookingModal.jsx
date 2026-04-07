@@ -18,14 +18,19 @@ export default function BookingModal () {
         const e = {};
         if (!form.name.trim()) e.name = 'Full name is required';
         if (!form.email.trim()) e.mail = 'Email is required';
-        else if (!/^[^\s@]+\.[^\s@]+$/.test(form.email)) e.mail = 'Enter a valid email';
+        else if (!/^[^\s@]+@[^\s@]+$/.test(form.email)) e.mail = 'Enter a valid email';
         return e;
     };
 
-    const handdleSubmit = async () => {
+    const handleSubmit = async () => {
         const errs = validate();
-        if (Object.keys(errs).length) {setErrors(errs); return;}
-        const result = await dispatch(createBooking({courseId: course, date, time:slot, ...form }));
+        if (Object.keys(errs).length) {
+            setErrors(errs);
+             return;
+            }
+        const result = await dispatch(
+            createBooking({courseId: course, date, time:slot, ...form })
+        );
             if (createBooking.fulfilled.match(result)) {
                 dispatch(closeModal());
                 dispatch(showToast({message:`Tee time ${slot} booked!`, type:'success'}));
@@ -62,7 +67,7 @@ export default function BookingModal () {
                                     <label style={{color:'rgba(255,255,255,0.7)', fontSize:'13px', display:'block', marginBottom:'6px'}}>Full Name</label>
                                     <input value={form.name} onChange={e => {setForm(p => ({...p,name:e.target.value}));
                                     setErrors(p => ({...p,name:''})); }} placeholder='John Smith' style={inputStyle('name')}/>
-                                    {errors.name && <p style={{ color:'#EF4444', fontSize:'12px', marginTop: '4px'}}>{error.name}</p>}
+                                    {errors.name && <p style={{ color:'#EF4444', fontSize:'12px', marginTop: '4px'}}>{errors.name}</p>}
                                 </div>
                                 <div>
                                 <label style={{color:'rgba(255,255,255,0.7)', fontSize:'13px', display:'block', marginBottom:'6px'}}>Email Address</label>
