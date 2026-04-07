@@ -30,7 +30,7 @@ export default function BookingModal () {
             }
         const result = await dispatch(createBooking({
             courseId: course, 
-            date, 
+            date: date, 
             time:slot, 
             name: form.name,
             email: form.email,
