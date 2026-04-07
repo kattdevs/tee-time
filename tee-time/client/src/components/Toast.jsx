@@ -16,7 +16,7 @@ export default function Toast() {
 
     if (!toast.visible) return null;
 
-    const isSucess = toast.type === 'success';
+    const isSuccess = toast.type === 'success';
     return (
         <div style={{
             position:'fixed', bottom:'32px', right: '32px', zIndex: 300,
@@ -29,7 +29,7 @@ export default function Toast() {
             maxWidth: '380px',
         }}>
             {isSuccess ? <CheckCircle size={20} color='#C9A84C' /> : <XCircle size={20} color='#EF4444' />}
-            <span style={{color:'white', fontsize:'14px', fontWeight:'500'}}>
+            <span style={{color:'white', fontSize:'14px', fontWeight:'500'}}>
                 {toast.message}
             </span>
             </div>
