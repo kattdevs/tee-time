@@ -19,7 +19,7 @@ router.post('/', (req, res) => {
     return res.status(400).json({ error: 'players must be between 1 and 4.' });
   }
 
-  const booking = createBooking({ courseId: course, date, time, name, email, players: numPlayers });
+  const booking = createBooking({ courseId: courseId, date, time, name, email, players: numPlayers });
   if (!booking) {
     return res.status(409).json({
       error: `Tee time ${time} on ${date} at ${COURSES[courseId].name} is already booked.`
