@@ -38,44 +38,54 @@ export default function BookingModal() {
   };
 
   const handleSubmit = async () => {
-    const errs = validate();
-    if (Object.keys(errs).length) { setErrors(errs); return; }
-
-    // Make sure date is YYYY-MM-DD (no slashes)
-    const cleanDate = date ? date.replace(/\//g, '-') : '';
-
-    // Log what we are sending so you can verify in console
-    console.log('Booking payload:', {
-      courseId: course,
-      date: cleanDate,
-      time: slot,
-      name: form.name.trim(),
-      email: form.email.trim(),
-      players: parseInt(form.players, 10),
-    });
-
-    const result = await dispatch(createBooking({
-      courseId: course,
-      date:     cleanDate,
-      time:     slot,
-      name:     form.name.trim(),
-      email:    form.email.trim(),
-      players:  parseInt(form.players, 10),
+  // Check if a slot/time has been selected
+  if (!slot) {
+    dispatch(showToast({
+      message: 'Please select a tee time',
+      type: 'error'
     }));
+    return;
+  }
 
-    if (createBooking.fulfilled.match(result)) {
-      dispatch(closeModal());
-      dispatch(showToast({ message: `Tee time ${slot} booked successfully!`, type: 'success' }));
-      // Refresh available slots so the booked one disappears
-      dispatch(fetchSlots({ course, date: cleanDate }));
-    } else {
-      // Show the server error message as a toast
-      dispatch(showToast({
-        message: result.payload || 'Booking failed. Please try again.',
-        type: 'error'
-      }));
-    }
-  };
+  const errs = validate();
+  if (Object.keys(errs).length) { 
+    setErrors(errs); 
+    return; 
+  }
+
+  // Make sure date is YYYY-MM-DD (no slashes)
+  const cleanDate = date ? date.replace(/\//g, '-') : '';
+
+  // Log what we are sending so you can verify in console
+  console.log('Booking payload:', {
+    courseId: course,
+    date: cleanDate,
+    time: slot,
+    name: form.name.trim(),
+    email: form.email.trim(),
+    players: parseInt(form.players, 10),
+  });
+
+  const result = await dispatch(createBooking({
+    courseId: course,
+    date:     cleanDate,
+    time:     slot,
+    name:     form.name.trim(),
+    email:    form.email.trim(),
+    players:  parseInt(form.players, 10),
+  }));
+
+  if (createBooking.fulfilled.match(result)) {
+    dispatch(closeModal());
+    dispatch(showToast({ message: `Tee time ${slot} booked successfully!`, type: 'success' }));
+    dispatch(fetchSlots({ course, date: cleanDate }));
+  } else {
+    dispatch(showToast({
+      message: result.payload || 'Booking failed. Please try again.',
+      type: 'error'
+    }));
+  }
+};
 
   const inputStyle = (field) => ({
     width: '100%',
