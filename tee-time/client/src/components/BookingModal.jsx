@@ -29,16 +29,29 @@ export default function BookingModal() {
   const [errors, setErrors] = useState({});
 
   const validate = () => {
-    const e = {};
-    if (!form.name.trim())  e.name  = 'Full name is required';
-    if (!form.email.trim()) e.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      e.email = 'Enter a valid email address';
-    return e;
-  };
+  const e = {};
+  
+  // Trim and check name
+  const trimmedName = form.name.trim();
+  if (!trimmedName) {
+    e.name = 'Full name is required';
+  }
+  
+  // Trim and check email
+  const trimmedEmail = form.email.trim();
+  if (!trimmedEmail) {
+    e.email = 'Email is required';
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    e.email = 'Enter a valid email address';
+  }
+  
+  // Log for debugging
+  console.log('Form validation:', { trimmedName, trimmedEmail, errors: e });
+  
+  return e;
+};
 
-  const handleSubmit = async () => {
-  // Check if a slot/time has been selected
+ const handleSubmit = async () => {
   if (!slot) {
     dispatch(showToast({
       message: 'Please select a tee time',
@@ -48,6 +61,8 @@ export default function BookingModal() {
   }
 
   const errs = validate();
+  console.log('Validation errors:', errs); // ← Add this line
+  
   if (Object.keys(errs).length) { 
     setErrors(errs); 
     return; 
