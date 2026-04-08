@@ -11,7 +11,7 @@ app.use(express.json());
 
 //Mount routes
 app.use('/api/slots',    slots);
-app.use('/api/bookings',  bookings);
+app.use('/api/bookings',  bookingsRoutes);
 
 //Health check
 app.get('/', (req, res) => res.json({
