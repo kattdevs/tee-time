@@ -6,10 +6,16 @@ const bookings = require('./routes/bookings')
 const app = express();
 const PORT = process.env.PORT || 4000;
 
-app.use(cors());
-app.use(express.json());
+app.use(cors({
+    origin:[
+        'http://localhost:5173',
+        'http://localhost:3000',
+        /\.vercel\.app$/, 
+    ],
+    credentials: true,
+}));
 
-//Mount routes
+app.use(express.json());
 app.use('/api/slots',    slots);
 app.use('/api/bookings',  bookings);
 
